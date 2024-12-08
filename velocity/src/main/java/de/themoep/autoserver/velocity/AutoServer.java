@@ -136,12 +136,12 @@ public class AutoServer implements Languaged {
 			}
 			try {
 				if (server.ping().join() != null) {
-					player.createConnectionRequest(server).connect().whenComplete((result, throwable) -> {
+					currentPlayer.createConnectionRequest(server).connect().whenComplete((result, throwable) -> {
 						if (result.isSuccessful()) {
-							log(Level.INFO, "Connected player " + player.getUsername() + " to server " + server.getServerInfo().getName());
+							log(Level.INFO, "Connected player " + currentPlayer.getUsername() + " to server " + server.getServerInfo().getName());
 							startingServers.invalidate(server.getServerInfo().getName());
 						} else {
-							log(Level.WARNING, "Failed to connect player " + player.getUsername() + " to server " + server.getServerInfo().getName()
+							log(Level.WARNING, "Failed to connect player " + currentPlayer.getUsername() + " to server " + server.getServerInfo().getName()
 									+ ": " + result.getReasonComponent().map(MineDown::stringify).orElse("Unknown reason"));
 						}
 						if (throwable != null) {
@@ -154,9 +154,9 @@ public class AutoServer implements Languaged {
 			} catch (Exception e) {
 				// Server is offline
 			}
-			player.showTitle(Title.title(
-					getTranslation(player, "server-starting.title"),
-					getTranslation(player, "server-starting.subtitle"),
+			currentPlayer.showTitle(Title.title(
+					getTranslation(currentPlayer, "server-starting.title"),
+					getTranslation(currentPlayer, "server-starting.subtitle"),
 					Title.Times.times(Duration.ZERO, Duration.ofSeconds(5), Duration.ZERO)
 			));
 		}).delay(1, TimeUnit.SECONDS).repeat(5, TimeUnit.SECONDS).schedule());
