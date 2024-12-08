@@ -18,7 +18,9 @@ package de.themoep.autoserver.application;
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,20 +44,35 @@ public class WebServer {
 	}
 
 	private void handleRequests() {
-		try {
-			System.out.println("Waiting for connections...");
-			Socket clientSocket = serverSocket.accept();
-			System.out.println("Connection from " + clientSocket.getInetAddress().getHostAddress());
-			OutputStream output = clientSocket.getOutputStream();
-			String response = "HTTP/1.1 200 OK\r\n\r\n";
-			output.write(response.getBytes());
-			output.flush();
-			clientSocket.close();
-			serverSocket.close();
-			System.out.println("Shutting down...");
-			System.exit(0); // Shutdown the program
-		} catch (IOException e) {
-			e.printStackTrace();
+		while (true) {
+			try {
+				System.out.println("Waiting for connections...");
+				Socket clientSocket = serverSocket.accept();
+				System.out.println("Connection from " + clientSocket.getInetAddress().getHostAddress());
+				BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				String request = input.readLine();
+				System.out.println("Received request: " + request);
+				OutputStream output = clientSocket.getOutputStream();
+				String response = "";
+				boolean shutdown = false;
+				if (request.startsWith("GET /start ")) {
+					response = "HTTP/1.1 200 OK\r\n\r\n";
+					shutdown = true;
+				} else {
+					response = "HTTP/1.1 404 Not Found\r\n\r\n";
+				}
+				output.write(response.getBytes());
+				output.flush();
+				clientSocket.close();
+				if (shutdown) {
+					serverSocket.close();
+					System.out.println("Shutting down...");
+					System.exit(0); // Shutdown the program
+					break;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

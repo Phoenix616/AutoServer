@@ -45,15 +45,19 @@ public class EventListener {
 		}
 
 		// Check if target server is online
-		ServerPing ping = event.getInitialServer().get()
-				.ping(PingOptions.builder()
-						.version(event.getPlayer().getProtocolVersion())
-						.timeout(10, TimeUnit.SECONDS)
-						.build())
-				.join();
-		if (ping != null) {
-			// Server is online, let the player connect
-			return;
+		try {
+			ServerPing ping = event.getInitialServer().get()
+					.ping(PingOptions.builder()
+							.version(event.getPlayer().getProtocolVersion())
+							.timeout(10, TimeUnit.SECONDS)
+							.build())
+					.join();
+			if (ping != null) {
+				// Server is online, let the player connect
+				return;
+			}
+		} catch (Exception e) {
+			// Server is offline, continue
 		}
 
 		// Route player to fallback and start server

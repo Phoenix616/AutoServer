@@ -134,27 +134,31 @@ public class AutoServer implements Languaged {
 				cancelServerTask(playerId);
 				return;
 			}
-			if (server.ping().join() != null) {
-				player.createConnectionRequest(server).connect().whenComplete((result, throwable) -> {
-					if (result.isSuccessful()) {
-						log(Level.INFO, "Connected player " + player.getUsername() + " to server " + server.getServerInfo().getName());
-						startingServers.invalidate(server.getServerInfo().getName());
-					} else {
-						log(Level.WARNING, "Failed to connect player " + player.getUsername() + " to server " + server.getServerInfo().getName()
-								+ ": " + result.getReasonComponent().map(MineDown::stringify).orElse("Unknown reason"));
-					}
-					if (throwable != null) {
-						log(Level.SEVERE, "Failed to connect player to server " + server.getServerInfo().getName(), throwable);
-					}
-				});
-				cancelServerTask(playerId);
-			} else {
-				player.showTitle(Title.title(
-						getTranslation(player, "server-starting.title"),
-						getTranslation(player, "server-starting.subtitle"),
-						Title.Times.times(Duration.ZERO, Duration.ofSeconds(5), Duration.ZERO)
-				));
+			try {
+				if (server.ping().join() != null) {
+					player.createConnectionRequest(server).connect().whenComplete((result, throwable) -> {
+						if (result.isSuccessful()) {
+							log(Level.INFO, "Connected player " + player.getUsername() + " to server " + server.getServerInfo().getName());
+							startingServers.invalidate(server.getServerInfo().getName());
+						} else {
+							log(Level.WARNING, "Failed to connect player " + player.getUsername() + " to server " + server.getServerInfo().getName()
+									+ ": " + result.getReasonComponent().map(MineDown::stringify).orElse("Unknown reason"));
+						}
+						if (throwable != null) {
+							log(Level.SEVERE, "Failed to connect player to server " + server.getServerInfo().getName(), throwable);
+						}
+					});
+					cancelServerTask(playerId);
+					return;
+				}
+			} catch (Exception e) {
+				// Server is offline
 			}
+			player.showTitle(Title.title(
+					getTranslation(player, "server-starting.title"),
+					getTranslation(player, "server-starting.subtitle"),
+					Title.Times.times(Duration.ZERO, Duration.ofSeconds(5), Duration.ZERO)
+			));
 		}).delay(1, TimeUnit.SECONDS).repeat(5, TimeUnit.SECONDS).schedule());
 
 		if (startingServers.getIfPresent(server.getServerInfo().getName()) != null) {
@@ -164,16 +168,17 @@ public class AutoServer implements Languaged {
 		// Send a TCP packet to the server to start it
 		// This is a custom implementation and not part of the velocity api
 		try {
-			URL url = new URL("http://" + server.getServerInfo().getAddress());
+			URL url = new URL("http://" + server.getServerInfo().getAddress() + "/start");
 			// Send web request to url
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("GET");
 			startingServers.put(server.getServerInfo().getName(), true);
 			connection.connect();
 			if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				log(Level.INFO, "Sent start request to " + server.getServerInfo().getAddress());
+				log(Level.INFO, "Sent start request to " + url);
 			} else {
-				log(Level.WARNING, "Failed to send start request to " + server.getServerInfo().getAddress() + " (HTTP " + connection.getResponseCode() + ")");
+				log(Level.WARNING, "Failed to send start request to " + url + " (HTTP " + connection.getResponseCode() + ")");
+				startingServers.invalidate(server.getServerInfo().getName());
 			}
 			connection.disconnect();
 		} catch (MalformedURLException e) {
