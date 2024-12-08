@@ -43,6 +43,7 @@ public class WebServer {
 
 	private void handleRequests() {
 		try {
+			System.out.println("Waiting for connections...");
 			Socket clientSocket = serverSocket.accept();
 			System.out.println("Connection from " + clientSocket.getInetAddress().getHostAddress());
 			OutputStream output = clientSocket.getOutputStream();
