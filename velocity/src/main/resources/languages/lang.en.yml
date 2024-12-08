@@ -1,0 +1,7 @@
+command:
+  reloaded: "[Reloaded](green)"
+  reload-failed: "[Reload failed](red)"
+  unknown-subcommand: "[Unknown subcommand](red)"
+server-starting:
+  title: "[Starting server...](aqua)"
+  subtitle: "[%server%](yellow) [is starting... Please wait.](gray)"

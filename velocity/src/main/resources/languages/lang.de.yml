@@ -1,0 +1,7 @@
+command:
+  reloaded: "[Config neu geladen](green)"
+  reload-failed: "[Neuladen der Config fehlgeschlagen](red)"
+  unknown-subcommand: "[Unbekannter Unterbefehl](red)"
+server-starting:
+  title: "[Server startet...](aqua)"
+  subtitle: "[%server%](yellow) [startet... Bitte warten.](gray)"

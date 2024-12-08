@@ -1,0 +1,7 @@
+{
+  "id": "autoserver",
+  "name": "${project.parent.name}",
+  "version": "${minecraft.plugin.version}",
+  "main": "${project.groupId}.${project.artifactId}.${project.parent.name}",
+  "authors": ["Phoenix616"]
+}
