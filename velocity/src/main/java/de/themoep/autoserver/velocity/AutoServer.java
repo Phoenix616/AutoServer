@@ -18,6 +18,8 @@ package de.themoep.autoserver.velocity;
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -63,6 +65,7 @@ public class AutoServer implements Languaged {
 	private PluginConfig config;
 	private LanguageManager langManager;
 
+	private final Cache<String, Boolean> startingServers = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(2)).build();
 	private final Map<UUID, ScheduledTask> serverStartTasks = new HashMap<>();
 
 	@Subscribe
@@ -132,7 +135,18 @@ public class AutoServer implements Languaged {
 				return;
 			}
 			if (server.ping().join() != null) {
-				player.createConnectionRequest(server).fireAndForget();
+				player.createConnectionRequest(server).connect().whenComplete((result, throwable) -> {
+					if (result.isSuccessful()) {
+						log(Level.INFO, "Connected player " + player.getUsername() + " to server " + server.getServerInfo().getName());
+						startingServers.invalidate(server.getServerInfo().getName());
+					} else {
+						log(Level.WARNING, "Failed to connect player " + player.getUsername() + " to server " + server.getServerInfo().getName()
+								+ ": " + result.getReasonComponent().map(MineDown::stringify).orElse("Unknown reason"));
+					}
+					if (throwable != null) {
+						log(Level.SEVERE, "Failed to connect player to server " + server.getServerInfo().getName(), throwable);
+					}
+				});
 				cancelServerTask(playerId);
 			} else {
 				player.showTitle(Title.title(
@@ -143,6 +157,10 @@ public class AutoServer implements Languaged {
 			}
 		}).delay(1, TimeUnit.SECONDS).repeat(5, TimeUnit.SECONDS).schedule());
 
+		if (startingServers.getIfPresent(server.getServerInfo().getName()) != null) {
+			// Already starting
+			return;
+		}
 		// Send a TCP packet to the server to start it
 		// This is a custom implementation and not part of the velocity api
 		try {
@@ -150,6 +168,7 @@ public class AutoServer implements Languaged {
 			// Send web request to url
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("GET");
+			startingServers.put(server.getServerInfo().getName(), true);
 			connection.connect();
 			if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
 				log(Level.INFO, "Sent start request to " + server.getServerInfo().getAddress());
