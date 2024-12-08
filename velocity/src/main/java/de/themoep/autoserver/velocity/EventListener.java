@@ -44,9 +44,11 @@ public class EventListener {
 			return;
 		}
 
+		RegisteredServer targetServer = event.getInitialServer().get();
+
 		// Check if target server is online
 		try {
-			ServerPing ping = event.getInitialServer().get()
+			ServerPing ping = targetServer
 					.ping(PingOptions.builder()
 							.version(event.getPlayer().getProtocolVersion())
 							.timeout(10, TimeUnit.SECONDS)
@@ -63,14 +65,14 @@ public class EventListener {
 		// Route player to fallback and start server
 		for (String serverName : plugin.getProxy().getConfiguration().getAttemptConnectionOrder()) {
 			Optional<RegisteredServer> fallbackServer = plugin.getProxy().getServer(serverName);
-			if (fallbackServer.isPresent() && fallbackServer.get() != event.getInitialServer().orElse(null)) {
+			if (fallbackServer.isPresent() && fallbackServer.get() != targetServer) {
 				event.setInitialServer(fallbackServer.get());
 				break;
 			}
 		}
 
 		// Trigger server start and checker
-		plugin.startServer(event.getPlayer(), event.getInitialServer().get());
+		plugin.startServer(event.getPlayer(), targetServer);
 	}
 
 	@Subscribe
