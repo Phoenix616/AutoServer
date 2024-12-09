@@ -51,7 +51,7 @@ public class EventListener {
 			ServerPing ping = targetServer
 					.ping(PingOptions.builder()
 							.version(event.getPlayer().getProtocolVersion())
-							.timeout(10, TimeUnit.SECONDS)
+							.timeout(plugin.getPingTimeout(), TimeUnit.SECONDS)
 							.build())
 					.join();
 			if (ping != null) {

@@ -27,6 +27,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.server.PingOptions;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.themoep.minedown.adventure.MineDown;
@@ -65,6 +66,9 @@ public class AutoServer implements Languaged {
 	private PluginConfig config;
 	private LanguageManager langManager;
 
+	private int pingTimeout;
+	private int pingInterval;
+
 	private final Cache<String, Boolean> startingServers = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(2)).build();
 	private final Map<UUID, ScheduledTask> serverStartTasks = new HashMap<>();
 
@@ -97,6 +101,17 @@ public class AutoServer implements Languaged {
 		}
 
 		langManager = new LanguageManager(this, config.getString("defaultLanguage"));
+
+		pingTimeout = config.getInt("pingTimeout");
+		if (pingTimeout < 1) {
+			log(Level.WARNING, "Invalid pingTimeout value in config! Using default value of 3 seconds.");
+			pingTimeout = 3;
+		}
+		pingInterval = config.getInt("pingInterval");
+		if (pingInterval < 1) {
+			log(Level.WARNING, "Invalid pingInterval value in config! Using default value of 10 seconds.");
+			pingInterval = 10;
+		}
 
 		return true;
 	}
@@ -135,7 +150,8 @@ public class AutoServer implements Languaged {
 				return;
 			}
 			try {
-				if (server.ping().join() != null) {
+				PingOptions pingOptions = PingOptions.builder().timeout(Duration.ofSeconds(pingTimeout)).version(currentPlayer.getProtocolVersion()).build();
+				if (server.ping(pingOptions).join() != null) {
 					currentPlayer.createConnectionRequest(server).connect().whenComplete((result, throwable) -> {
 						if (result.isSuccessful()) {
 							log(Level.INFO, "Connected player " + currentPlayer.getUsername() + " to server " + server.getServerInfo().getName());
@@ -159,7 +175,7 @@ public class AutoServer implements Languaged {
 					getTranslation(currentPlayer, "server-starting.subtitle"),
 					Title.Times.times(Duration.ZERO, Duration.ofSeconds(5), Duration.ZERO)
 			));
-		}).delay(1, TimeUnit.SECONDS).repeat(5, TimeUnit.SECONDS).schedule());
+		}).delay(1, TimeUnit.SECONDS).repeat(pingInterval, TimeUnit.SECONDS).schedule());
 
 		if (startingServers.getIfPresent(server.getServerInfo().getName()) != null) {
 			// Already starting
@@ -195,5 +211,9 @@ public class AutoServer implements Languaged {
 		if (task != null) {
 			task.cancel();
 		}
+	}
+
+	public int getPingTimeout() {
+		return pingTimeout;
 	}
 }

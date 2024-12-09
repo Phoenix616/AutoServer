@@ -1,1 +1,5 @@
 defaultLanguage: en
+# The timeout for the ping for when the server is considered offline, in seconds
+pingTimeout: 3
+# How often in seconds a server should be pinged
+pingInterval: 10
