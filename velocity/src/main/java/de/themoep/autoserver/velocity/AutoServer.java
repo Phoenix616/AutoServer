@@ -184,7 +184,7 @@ public class AutoServer implements Languaged {
 		// Send a TCP packet to the server to start it
 		// This is a custom implementation and not part of the velocity api
 		try {
-			URL url = new URL("http://" + server.getServerInfo().getAddress() + "/start");
+			URL url = new URL("http://" + server.getServerInfo().getAddress().getHostString() + ":" + server.getServerInfo().getAddress().getPort() + "/start");
 			// Send web request to url
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("GET");
