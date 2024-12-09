@@ -171,9 +171,9 @@ public class AutoServer implements Languaged {
 				// Server is offline
 			}
 			currentPlayer.showTitle(Title.title(
-					getTranslation(currentPlayer, "server-starting.title"),
-					getTranslation(currentPlayer, "server-starting.subtitle"),
-					Title.Times.times(Duration.ZERO, Duration.ofSeconds(5), Duration.ZERO)
+					getTranslation(currentPlayer, "server-starting.title", "server", server.getServerInfo().getName()),
+					getTranslation(currentPlayer, "server-starting.subtitle", "server", server.getServerInfo().getName()),
+					Title.Times.times(Duration.ZERO, Duration.ofSeconds(pingInterval + 1), Duration.ZERO)
 			));
 		}).delay(1, TimeUnit.SECONDS).repeat(pingInterval, TimeUnit.SECONDS).schedule());
 
