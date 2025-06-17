@@ -159,6 +159,8 @@ public class AutoServer implements Languaged {
 						} else {
 							log(Level.WARNING, "Failed to connect player " + currentPlayer.getUsername() + " to server " + server.getServerInfo().getName()
 									+ ": " + result.getReasonComponent().map(MineDown::stringify).orElse("Unknown reason"));
+							player.disconnect(result.getReasonComponent()
+									.orElse(getTranslation(player, "server-starting.error", "server", server.getServerInfo().getName())));
 						}
 						if (throwable != null) {
 							log(Level.SEVERE, "Failed to connect player to server " + server.getServerInfo().getName(), throwable);
@@ -192,6 +194,7 @@ public class AutoServer implements Languaged {
 			connection.connect();
 			if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
 				log(Level.INFO, "Sent start request to " + url);
+				return;
 			} else {
 				log(Level.WARNING, "Failed to send start request to " + url + " (HTTP " + connection.getResponseCode() + ")");
 				startingServers.invalidate(server.getServerInfo().getName());
@@ -204,6 +207,7 @@ public class AutoServer implements Languaged {
 		} catch (IOException e) {
 			log(Level.SEVERE, "IO error while trying to connect to " + server.getServerInfo().getAddress(), e);
 		}
+		player.disconnect(getTranslation(player, "server-starting.error", "server", server.getServerInfo().getName()));
 	}
 
 	void cancelServerTask(UUID playerId) {

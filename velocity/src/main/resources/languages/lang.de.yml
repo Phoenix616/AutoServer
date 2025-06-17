@@ -5,3 +5,4 @@ command:
 server-starting:
   title: "[Server startet...](aqua)"
   subtitle: "[%server%](yellow) [startet... Bitte warten.](gray)"
+  error: "[Beim Starten von [%server%](yellow) ist ein Fehler aufgetreten](red)"
