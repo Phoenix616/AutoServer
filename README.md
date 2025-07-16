@@ -2,7 +2,7 @@
 
 AutoServer is a Velocity plugin which allows you to automatically start a shutdown Minecraft server that the player tries to connect to. This is useful for servers that are not always online, but you want to allow players to connect to the server at any time.
 
-This plugin is designed with the concept that your server is running inside a loop in your start script and the application is blocking the execution of the script until it receives a request close itself which in turn starts the server again.
+This plugin is designed with the concept that your server is running inside a loop in your start script and the application is blocking the execution of the script until it receives a request to close itself which in turn starts the server again.
 
 ## Installation
 
