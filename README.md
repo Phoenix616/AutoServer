@@ -9,7 +9,22 @@ This plugin is designed with the concept that your server is running inside a lo
 1. Download the [Velocity plugin](https://ci.minebench.de/job/AutoServer/lastSuccessfulBuild/artifact/velocity/target/AutoServer-Velocity.jar) and the [standalone application](https://ci.minebench.de/job/AutoServer/lastSuccessfulBuild/artifact/application/target/AutoServer-Application.jar)
 2. Place the plugin in the `plugins` folder of your Velocity server
 3. Place the standalone application in the same directory as your server
-4. Modify your server start script so that it runs in a loop and that the standalone application is started after the server is shutdown
+4. Add some way to automatically stop the Minecraft server e.g. a plugin which stops it after every player left like [AutoStop](https://github.com/pmdevita/AutoStop).
+5. Modify your server start script so that it runs in a loop and that the standalone application is started after the server is shutdown e.g. this on linux:
+```bash
+#!/bin/bash
+
+[ -e stop ] && rm stop
+echo -n 0 > stop
+
+while [ `cat stop` -ne 1 ];
+do
+    echo "Server started at $(date --rfc-3339=seconds)";
+    java -jar paper.jar nogui; # your server start command
+    echo "Server stopped at $(date --rfc-3339=seconds)";
+    java -jar AutoServer-Application.jar;
+done
+```
 
 The standalone application will then wait until it receives a request on the port the Minecraft server normally uses until it shuts down which allows the looping script to start your server again.
 
