@@ -1,3 +1,10 @@
+> [!CAUTION]
+> ## Repository is archived as I'm leaving GitHub!
+>
+> GitHub wants me to "embrace AI or get out". So I'm leaving.
+> 
+> Continued development will happen on Codeberg: https://codeberg.org/Phoenix616/AutoServer
+
 # AutoServer
 
 AutoServer is a Velocity plugin which allows you to automatically start a shutdown Minecraft server that the player tries to connect to. This is useful for servers that are not always online, but you want to allow players to connect to the server at any time.
